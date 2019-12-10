@@ -1,6 +1,6 @@
 'use strict';
 
-const PORT = process.env.PORT || 3000; 
+const PORT = process.env.PORT || 3000;
 const express = require('express');
 const cors = require('cors');
 
@@ -9,9 +9,34 @@ require('dotenv').config();
 
 app.use(cors());
 
+app.get('/', (request,response) => {
+  response.send('Home Page!');
+});
 
-app.get('/location', (req, res) => {
+app.get('/location', (request,response) => {
+  try {
+    const query = request.query.data;
+    response.send(searchLatLong(query));
+  }
+  catch(error) {
+    console.error(error);
+  }
+});
+
+function Location(query, geoData) {
+  this.search_query = geoData.results[0].address_components[0].long_name;
+  this.formatted_query = geoData.results[0].formatted_address;
+  this.latitude = geoData.results[0].geometry.location.lat;
+  this.longitude = geoData.results[0].geometry.location.lng;
+}
+
+function searchLatLong(location) {
   const geoData = require('./data/geo.json');
-  console.log(geoData);
-}),
+  const locationData = new Location(location,geoData);
+  console.log('locationData :', locationData);
+  return locationData;
+}
 
+app.listen(PORT, () => {
+  console.log(`listening on ${PORT}`);
+});

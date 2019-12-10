@@ -32,7 +32,7 @@ function Location(query, geoData) {
 
 function searchLatLong(location) {
   const geoData = require('./data/geo.json');
-  const locationData = new Location(location,geoData);
+  const locationData = new (location,geoData);
   console.log('locationData :', locationData);
   return locationData;
 }
@@ -40,3 +40,27 @@ function searchLatLong(location) {
 app.listen(PORT, () => {
   console.log(`listening on ${PORT}`);
 });
+
+
+app.get('/Weather', (request,response) => {
+  try {
+    const weather = request.query.data;
+    response.send(searchLatLong(query));
+  }
+  catch(error) {
+    console.error(error);
+  }
+});
+
+function Weather(query, weatherForcast) {
+  this.search_query = weatherForcast.results[0].address_components[0].long_name;
+  this.formatted_query = weatherForcast.results[0].formatted_address;
+  this.latitude = weatherForcast.results[0].geometry.location.lat;
+  this.longitude = weatherForcast.results[0].geometry.location.lng;
+}
+
+function getWeather(location) {
+  const weatherForcast = require('./data/darksky.json');
+  const weatherData = new Weather(location,weatherForcast);
+ 
+}

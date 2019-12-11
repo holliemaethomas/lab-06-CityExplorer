@@ -56,9 +56,9 @@ function getWeather() {
   return weatherDetails;
 }
 
-function Weather(element) {
-  this.forecast = element.summary,
-  this.time = new Date(element.time * 1000).toDateString();
+function Weather(weatherObj) {
+  this.forecast = weatherObj.summary,
+  this.time = new Date(weatherObj.time * 1000).toDateString();
 }
 
 app.listen(PORT, () => {

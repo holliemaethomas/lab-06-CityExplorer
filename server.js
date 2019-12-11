@@ -5,66 +5,63 @@ const express = require('express');
 const cors = require('cors');
 
 const app = express();
-
 require('dotenv').config();
 
 app.use(cors());
 
-app.get('/', (request, response) => {
-  response.send('Home Page!');
+app.get('/', (request,response) => {
+  response.send('Home Page is running!');
 });
 
-app.get('/location', (request, response) => {
+app.get('/location', (request,response) => {
   try {
-    const query = request.query.data;
-    response.send(searchLatLong(query));
+    const locationData = getLatLong(request.query.data);
+    response.send(locationData);
   }
-  catch (error) {
+  catch(error) {
     console.error(error);
+    response.status(500).send('Status 500: Internal Server Error');
   }
 });
 
-function Location(query, geoData) {
-  this.search_query = geoData.results[0].address_components[0].long_name;
-  this.formatted_query = geoData.results[0].formatted_address;
-  this.latitude = geoData.results[0].geometry.location.lat;
-  this.longitude = geoData.results[0].geometry.location.lng;
-}
+app.get('/weather', (request,response) => {
+  try {
+    const weatherQuery = getWeather();
+    console.log('weatherQuery :', weatherQuery);
+    response.send(weatherQuery);
+  }
+  catch(error) {
+    console.error(error);
+    response.status(500).send('Status 500: Internal Server Error');
+  }
+});
 
-function searchLatLong(location) {
+function getLatLong(location) {
   const geoData = require('./data/geo.json');
-  const locationData = new (location, geoData);
+  const locationData = {
+    search_query: location,
+    formatted_query: geoData.results[0].formatted_address,
+    latitude: geoData.results[0].geometry.location.lat,
+    longitude: geoData.results[0].geometry.location.lng,
+  }
   console.log('locationData :', locationData);
   return locationData;
+}
+
+function getWeather() {
+  const weatherForcast = require('./data/darksky.json');
+  let weatherDetails = [];
+  weatherForcast.daily.data.forEach(weatherObj => weatherDetails.push(new Weather(weatherObj)));
+
+  return weatherDetails;
+}
+
+function Weather(element) {
+  this.forecast = element.summary,
+  this.time = new Date(element.time * 1000).toDateString();
 }
 
 app.listen(PORT, () => {
   console.log(`listening on ${PORT}`);
 });
 
-app.get('/weather', (request, response) => {
-  try {
-    const weather = request.query.data;
-    response.send(getWeather(query));
-  }
-  catch (error) {
-    console.error(error);
-  }
-});
-
-function Weather(query, weatherForcast) {
-  this.summary = weatherForcast.daily.data[0].summary
-  this.time = weatherForcast.daily.data[0].time
-
-}
-
-function getWeather(time, summary) {
-  const weatherForcast = require('./data/darksky.json');
-  const weatherData = new Weather(time, summary);
-  console.log('weatherData :', weatherData);
-  return weatherData
-}
-
-
-
-// 15:21
